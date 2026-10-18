@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light dark">
+  <title>创作舱 · 自媒体工作台</title>
+  <link rel="stylesheet" href="styles.css">
+  <script src="app.js" defer></script>
+</head>
+<body>
+  <a class="skip-link" href="#main">跳至主要内容</a>
+  <aside class="sidebar" aria-label="工作台导航">
+    <a class="brand" href="#overview"><span class="brand-mark">C</span><span>创作舱<small>CREATOR WORKSPACE</small></span></a>
+    <p class="nav-label">创作工作流</p>
+    <nav id="navigation" aria-label="功能导航"></nav>
+    <div class="sidebar-note"><span class="status-dot"></span> 独立运行 · 本地存储<small>让每一个灵感，成为好内容。</small></div>
+  </aside>
+  <div class="workspace">
+    <header class="topbar"><span>我的工作空间 <span class="divider">/</span> <span id="breadcrumb">工作台概览</span></span><button id="theme-toggle" class="icon-button" type="button" aria-label="切换为深色主题">◐ <span>切换主题</span></button></header>
+    <main id="main" tabindex="-1"></main>
+    <footer>创作舱 · 把精力留给创作 <span>数据仅保存在当前浏览器</span></footer>
+  </div>
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+</body>
+</html>
