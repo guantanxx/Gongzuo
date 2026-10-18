@@ -7,3 +7,5 @@
 @media(prefers-reduced-motion:reduce){*,*:before,*:after{transition:none!important;scroll-behavior:auto!important}}
 
 .template-body{font-size:12px;line-height:2;color:var(--muted);white-space:pre-wrap;overflow-wrap:anywhere;max-height:280px;overflow-y:auto}
+
+.csv-preview{flex-basis:100%;padding:18px;background:var(--soft);border:1px solid var(--border);font-size:12px}.csv-preview[hidden]{display:none}.csv-preview p{overflow-wrap:anywhere}.csv-tools label{font-size:11px}

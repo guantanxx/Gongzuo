@@ -94,6 +94,7 @@
     const module = window.WorkspaceModules?.[section.id];
     document.getElementById('main').innerHTML = module ? heading(section.name, section.description || '管理你的创作空间') + module.render(ctx) : section.id === 'overview' ? overview() : heading(section.name, section.description) + empty('功能正在开发中');
     if (module) module.mount(ctx);
+    window.WorkspaceTools?.mountCSV?.(ctx);
     window.WorkspaceTools?.mountGlobal?.(ctx);
     window.WorkspaceModules.tasks?.mountWidget(ctx);
 
