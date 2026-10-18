@@ -1,6 +1,19 @@
 'use strict';
 (() => {
   const STORAGE_KEY = 'gongzuo.workspace.v1';
+  const collections = ['reports', 'ideas', 'topics', 'scripts', 'lives', 'metrics'];
+  const initial = () => ({ schemaVersion: 1, theme: 'light', profile: { name: '', niche: '', style: '' }, reports: [], ideas: [], topics: [], scripts: [], lives: [], metrics: [], drafts: {} });
+  let state = initial();
+  let readError = false;
+  try {
+    const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null');
+    if (saved && typeof saved === 'object' && !Array.isArray(saved)) {
+      state.theme = saved.theme === 'dark' ? 'dark' : 'light';
+      for (const key of Object.keys(state.profile)) if (typeof saved.profile?.[key] === 'string') state.profile[key] = saved.profile[key];
+      for (const key of collections) if (Array.isArray(saved[key])) state[key] = saved[key];
+      if (saved.drafts && typeof saved.drafts === 'object' && !Array.isArray(saved.drafts)) state.drafts = saved.drafts;
+    }
+  } catch { readError = true; }
   const sections = [
     { id: 'overview', name: '工作台概览', icon: '◫' },
     { id: 'analysis', name: '爆款拆解', icon: '⌕', description: '拆解内容结构与开头钩子，找到值得借鉴的创作方法。', hint: '从一条好内容开始' },
@@ -11,37 +24,46 @@
     { id: 'analytics', name: '数据复盘', icon: '▥', description: '记录发布表现，从数据中发现内容的增长方向。', hint: '让下一次创作更有依据' },
     { id: 'profile', name: '个人中心', icon: '♙' }
   ];
-  let storageAvailable = true;
-  let state = { theme: 'light', profile: { name: '', niche: '', style: '' } };
-  try {
-    const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null');
-    if (saved && typeof saved === 'object') {
-      if (saved.theme === 'dark') state.theme = 'dark';
-      for (const key of Object.keys(state.profile)) {
-        if (typeof saved.profile?.[key] === 'string') state.profile[key] = saved.profile[key];
-      }
-    }
-  } catch { storageAvailable = false; }
+
   let toastTimer;
   function notify(message) {
     const toast = document.getElementById('toast');
     toast.textContent = message;
     toast.classList.add('visible');
     clearTimeout(toastTimer);
-    toastTimer = setTimeout(() => toast.classList.remove('visible'), 3200);
+    toastTimer = setTimeout(() => toast.classList.remove('visible'), 3500);
   }
-  function save() {
-    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); return true; }
-    catch { notify('本地存储不可用，设置仅在本次页面中保留。'); return false; }
+  function persist(change, message = '', redraw = true) {
+    if (readError) { notify('本地数据读取失败。请先在个人中心导出原始数据或恢复有效备份，避免覆盖。'); return false; }
+    const next = JSON.parse(JSON.stringify(state));
+    change(next);
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(next)); }
+    catch { notify('保存失败：浏览器存储不可用或空间不足。请导出备份，释放空间后重试。'); return false; }
+    state = next;
+    if (redraw) render();
+    if (message) notify(message);
+    return true;
   }
+  const esc = value => String(value ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  const uid = () => globalThis.crypto?.randomUUID?.() || `item-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+  const date = value => new Date(value).toLocaleString('zh-CN', { hour12: false });
+  const today = () => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; };
+  const field = (name, label, value = '', options = {}) => `<div class="field"><label for="f-${esc(name)}">${esc(label)}</label><input id="f-${esc(name)}" name="${esc(name)}" value="${esc(value)}" ${options.type ? `type="${esc(options.type)}"` : 'type="text"'} ${options.required ? 'required' : ''} ${options.type === 'number' ? `min="${options.min ?? 0}" max="${options.max ?? 1000000000000}" step="1"` : `maxlength="${options.maxlength || 500}"`} ${options.placeholder ? `placeholder="${esc(options.placeholder)}"` : ''}></div>`;
+  const area = (name, label, value = '', required = false) => `<div class="field"><label for="f-${esc(name)}">${esc(label)}</label><textarea id="f-${esc(name)}" name="${esc(name)}" maxlength="30000" ${required ? 'required' : ''}>${esc(value)}</textarea></div>`;
+  const select = (name, label, choices, value = '') => `<div class="field"><label for="f-${esc(name)}">${esc(label)}</label><select id="f-${esc(name)}" name="${esc(name)}">${choices.map(([id, text]) => `<option value="${esc(id)}" ${id === value ? 'selected' : ''}>${esc(text)}</option>`).join('')}</select></div>`;
+  const empty = text => `<div class="empty-state"><p>${esc(text)}</p></div>`;
+  const values = form => Object.fromEntries(new FormData(form));
+  const draft = key => state.drafts[key] || {};
+  function bindDraft(form, key) {
+    form.addEventListener('input', () => { persist(s => { s.drafts[key] = { ...s.drafts[key], ...values(form) }; }, '', false); });
+  }
+  function go(page) { if (location.hash === `#${page}`) render(); else location.hash = page; }
   function applyTheme() {
     document.documentElement.dataset.theme = state.theme;
     document.getElementById('theme-toggle').setAttribute('aria-label', `切换为${state.theme === 'dark' ? '浅' : '深'}色主题`);
   }
   document.getElementById('theme-toggle').addEventListener('click', () => {
-    state.theme = state.theme === 'dark' ? 'light' : 'dark';
-    applyTheme();
-    if (save()) notify(`已切换为${state.theme === 'dark' ? '深' : '浅'}色主题`);
+    if (persist(s => { s.theme = s.theme === 'dark' ? 'light' : 'dark'; }, '主题已保存', false)) applyTheme();
   });
   const nav = document.getElementById('navigation');
   nav.innerHTML = sections.map(s => `<a class="nav-item" href="#${s.id}" data-page="${s.id}"><span class="nav-icon" aria-hidden="true">${s.icon}</span>${s.name}</a>`).join('');
@@ -51,37 +73,36 @@
   function overview() {
     return heading('把灵感，变成影响力。', '从灵感萌芽到内容复盘，你的创作流程尽在这里。') +
       `<section class="hero"><div><h2>每一份好内容，都从一个想法开始</h2><p>串联拆解、灵感、选题与表达，为你的创作建立清晰的节奏。</p></div><a class="primary" href="#ideas">探索灵感库 →</a></section>
-      <section class="stats" aria-label="内容资产概览">${['收藏灵感', '储备选题', '口播文案', '直播记录'].map((name, i) => `<article class="stat"><div class="stat-top">${name}<span aria-hidden="true">${['✧', '▤', '✎', '◉'][i]}</span></div><strong>0</strong><small>暂无记录 · 等待开始创作</small></article>`).join('')}</section>
+      <section class="stats" aria-label="内容资产概览">${['收藏灵感', '储备选题', '口播文案', '直播记录'].map((name, i) => `<article class="stat"><div class="stat-top">${name}<span aria-hidden="true">${['✧', '▤', '✎', '◉'][i]}</span></div><strong>${[state.ideas.length, state.topics.length, state.scripts.length, state.lives.length][i]}</strong><small>本地内容资产 · 实时统计</small></article>`).join('')}</section>
       <section aria-labelledby="tools-title"><div class="section-title"><h2 id="tools-title">创作工具箱</h2><span>从一个想法到一份作品</span></div><div class="cards">${sections.slice(1, 7).map((s, i) => `<a class="card" href="#${s.id}"><span class="card-icon" aria-hidden="true">${s.icon}</span><h2>${s.name}</h2><p>${s.description}</p><div class="card-bottom"><span>0${i + 1} / ${s.hint}</span><span aria-hidden="true">↗</span></div></a>`).join('')}</div></section>
-      <aside class="bottom-note"><span aria-hidden="true">◇</span><div><h2>你的内容，留在你的设备</h2><p>工作台独立运行，设置保存在当前浏览器。当前为基础框架，内容生成与数据管理功能将逐步加入。</p></div></aside>`;
+      <aside class="bottom-note"><span aria-hidden="true">◇</span><div><h2>你的内容，留在你的设备</h2><p>工作台独立运行，设置保存在当前浏览器。分析与生成基于本地规则，不抓取平台内容、不调用远程 AI。建议定期导出备份。</p></div></aside>`;
   }
+
   function profile() {
-    return heading('个人中心', '先定义你是谁，再打造属于你的内容风格。') + `<section class="panel"><h2>创作者档案</h2><p class="subtext" style="margin:6px 0 24px">档案自动保存在本机，后续用于个性化创作。</p><form id="profile-form"><div class="field"><label for="creator-name">IP 名称</label><input id="creator-name" name="name" maxlength="60" placeholder="例如：小林的成长手记" autocomplete="nickname"></div><div class="field"><label for="creator-niche">内容领域 / 目标人群</label><input id="creator-niche" name="niche" maxlength="200" placeholder="例如：面向初入职场年轻人的成长分享"></div><div class="field"><label for="creator-style">表达风格</label><textarea id="creator-style" name="style" maxlength="1000" placeholder="例如：真诚直接，多用生活案例，少用专业术语"></textarea></div><div class="form-actions"><button class="primary" type="submit">保存档案</button><span class="subtext">输入后自动保存</span></div></form></section>`;
+    return heading('个人中心', '定义创作者档案，管理你的本地工作空间。') + `<section class="panel"><h2>创作者档案</h2><p class="subtext">输入自动保存，供本地生成规则参考。</p><form id="profile-form">${field('name', 'IP 名称', state.profile.name, {maxlength:60})}${field('niche', '内容领域 / 目标人群', state.profile.niche, {maxlength:200})}${area('style','表达风格',state.profile.style)}<button class="primary">保存档案</button></form></section>`;
   }
+  const ctx = { get state() { return state; }, persist, esc, uid, date, today, field, area, select, empty, values, draft, bindDraft, notify, go, render, heading, get readError() { return readError; }, storageKey: STORAGE_KEY, initial, replaceState(next) {
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(next)); }
+    catch { notify('恢复失败：本地存储不可用或空间不足，原数据未变。'); return false; }
+    state = next; readError = false; applyTheme(); render(); notify('备份恢复成功'); return true;
+  }};
   function render() {
-    const id = location.hash.slice(1) || 'overview';
-    const section = sections.find(s => s.id === id) || sections[0];
+    const section = sections.find(s => s.id === location.hash.slice(1)) || sections[0];
     document.getElementById('breadcrumb').textContent = section.name;
     document.title = `${section.name} · 创作舱`;
     for (const link of nav.children) {
-      if (link.dataset.page === section.id) link.setAttribute('aria-current', 'page');
-      else link.removeAttribute('aria-current');
+      if (link.dataset.page === section.id) link.setAttribute('aria-current', 'page'); else link.removeAttribute('aria-current');
     }
-    document.getElementById('main').innerHTML = section.id === 'overview' ? overview() : section.id === 'profile' ? profile() : heading(section.name, section.description) + `<section class="panel empty-state"><div class="card-icon" aria-hidden="true">${section.icon}</div><h2>${section.hint}</h2><p>${section.description}</p><span class="pill">基础框架已就绪</span><p>本步骤提供页面与导航，${section.name}的内容操作将在后续开发中开放。</p><a class="secondary" style="display:inline-block;margin-top:24px" href="#overview">返回工作台</a></section>`;
-    if (section.id === 'profile') {
+    const module = window.WorkspaceModules?.[section.id];
+    document.getElementById('main').innerHTML = module ? heading(section.name, section.description || '管理你的创作空间') + module.render(ctx) : section.id === 'overview' ? overview() : section.id === 'profile' ? profile() : heading(section.name, section.description) + empty('功能正在开发中');
+    if (module) module.mount(ctx);
+    else if (section.id === 'profile') {
       const form = document.getElementById('profile-form');
-      for (const key of Object.keys(state.profile)) form.elements.namedItem(key).value = state.profile[key];
-      form.addEventListener('input', event => {
-        if (Object.hasOwn(state.profile, event.target.name)) {
-          state.profile[event.target.name] = event.target.value;
-          if (save()) notify('档案已自动保存');
-        }
-      });
-      form.addEventListener('submit', event => { event.preventDefault(); if (save()) notify('档案保存成功'); });
+      form.addEventListener('input', () => { persist(s => { s.profile = values(form); }, '', false); });
+      form.addEventListener('submit', e => { e.preventDefault(); persist(s => { s.profile = values(form); }, '档案保存成功', false); });
     }
   }
   window.addEventListener('hashchange', render);
-  applyTheme();
-  render();
-  if (!storageAvailable) notify('本地数据无法读取，请检查浏览器存储设置。');
+  applyTheme(); render();
+  if (readError) notify('本地数据读取失败，已暂停写入。请前往个人中心恢复备份。');
 })();
