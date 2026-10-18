@@ -49,8 +49,8 @@
   const empty = text => `<div class="empty-state"><p>${esc(text)}</p></div>`;
   const values = form => Object.fromEntries(new FormData(form));
   const draft = key => state.drafts[key] || {};
-  function bindDraft(form, key) {
-    form.addEventListener('input', () => { persist(s => { s.drafts[key] = { ...s.drafts[key], ...values(form) }; }, '', false); });
+  function bindDraft(form, key, exclude = []) {
+    form.addEventListener('input', event => { if (exclude.includes(event.target.name)) return; persist(s => { s.drafts[key] = { ...s.drafts[key], ...values(form) }; }, '', false); });
   }
   function go(page) { if (location.hash === `#${page}`) render(); else location.hash = page; }
   function applyTheme() {
@@ -99,7 +99,7 @@
       form.addEventListener('submit', e => { e.preventDefault(); persist(s => { s.profile = values(form); }, '档案保存成功', false); });
     }
   }
-  window.addEventListener('hashchange', render);
+  window.addEventListener('hashchange', () => { render(); window.scrollTo(0, 0); document.getElementById('main').focus({ preventScroll: true }); });
   applyTheme(); render();
   if (readError) notify('本地数据读取失败，已暂停写入。请前往个人中心恢复备份。');
 })();

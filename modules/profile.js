@@ -6,7 +6,7 @@ window.WorkspaceModules.profile = (()=>{
   function list(v) {if(!Array.isArray(v) || v.length>50000)fail('备份列表格式或条目数量无效');return v;}
   function integer(v,min=0,max=1e12) {if(!Number.isSafeInteger(v) || v<min || v>max)fail('备份包含无效数值');return v;}
   function timestamp(v){text(v,100);if(!Number.isFinite(Date.parse(v)))fail('备份包含无效时间');return v;}
-  function day(v){text(v,10);if(!/^\d{4}-\d{2}-\d{2}$/.test(v) || new Date(v+'T00:00:00Z').toISOString().slice(0,10)!==v)fail('备份包含无效日期');return v;}
+  function day(v){text(v,10);const d=new Date(v+'T00:00:00Z');if(!/^\d{4}-\d{2}-\d{2}$/.test(v) || !Number.isFinite(d.getTime()) || d.toISOString().slice(0,10)!==v)fail('备份包含无效日期');return v;}
   function id(v){text(v,200);if(!v)fail('备份记录缺少 ID');return v;}
   function unique(items){const ids=new Set();for(const item of items){id(item.id);if(ids.has(item.id))fail('备份存在重复 ID');ids.add(item.id);}return items;}
   function safeTree(value,depth=0){

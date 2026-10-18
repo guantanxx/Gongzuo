@@ -26,6 +26,7 @@ window.WorkspaceModules.topics = (()=>{
         document.querySelectorAll('[data-topic-status]').forEach(el=>el.addEventListener('change',()=>c.persist(s=>{s.topics.find(t=>t.id===el.dataset.topicStatus).status=el.value;},'选题状态已更新')));
         document.querySelectorAll('[data-use-topic]').forEach(b=>b.addEventListener('click',()=>{
           const topic=c.state.topics.find(t=>t.id===b.dataset.useTopic);
+          if(c.draft('scripts').text && !confirm('选用此选题会替换当前文案草稿，已保存版本保留。继续？'))return;
           if(c.persist(s=>{s.drafts.scripts={topicId:topic.id,title:topic.title,duration:'60',notes:topic.source || '',hook:topic.hook};},'',false)){c.go('scripts');c.notify('选题已带入口播文案');}
         }));
         document.querySelectorAll('[data-delete-topic]').forEach(b=>b.addEventListener('click',()=>{if(confirm('删除这条选题？已有文案仍会保留。'))c.persist(s=>{s.topics=s.topics.filter(t=>t.id!==b.dataset.deleteTopic);},'选题已删除');}));
