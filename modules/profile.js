@@ -42,13 +42,13 @@ window.WorkspaceModules.profile = (()=>{
   function validate(payload,c){
     if(!obj(payload))fail('请选择有效的 JSON 备份');
     if(payload.app!==undefined && payload.app!=='Gongzuo')fail('这不是创作舱备份');
-    if(payload.version!==undefined && payload.version!==1)fail('不支持此备份版本');
+    if(payload.version!==undefined && ![1,2].includes(payload.version))fail('不支持此备份版本');
     const raw=payload.app==='Gongzuo'?payload.data:payload;
-    if(!obj(raw) || (raw.schemaVersion!==undefined && raw.schemaVersion!==1))fail('备份数据版本无效');
+    if(!obj(raw) || (raw.schemaVersion!==undefined && ![1,2].includes(raw.schemaVersion)))fail('备份数据版本无效');
     safeTree(raw);
     if(!obj(raw.profile) || !['light','dark'].includes(raw.theme))fail('备份缺少有效个人设置');
     const state=c.initial();state.theme=raw.theme;
-    state.profile={name:text(raw.profile.name,60),niche:text(raw.profile.niche,200),style:text(raw.profile.style)};
+    state.profile={name:text(raw.profile.name,60),niche:text(raw.profile.niche,200),style:text(raw.profile.style),products:text(raw.profile.products ?? '',500),contact:text(raw.profile.contact ?? '',500)};
     for(const key of ['reports','ideas','topics','scripts','lives','metrics']){
       if(raw[key]===undefined && raw.schemaVersion===undefined)continue;
       state[key]=unique(list(raw[key])).map(row=>{
@@ -81,18 +81,19 @@ window.WorkspaceModules.profile = (()=>{
     const url=URL.createObjectURL(new Blob([content],{type:'application/json;charset=utf-8'}));
     const a=document.createElement('a');a.href=url;a.download=name;document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);c.notify('备份文件已生成，请保管好下载的 JSON');
   }
+  function exportAll(c){
+    if(c.readError){try{download(localStorage.getItem(c.storageKey) || '',`gongzuo-raw-${c.today()}.json`,c);}catch{c.notify('无法读取本地存储');}return;}
+    download(JSON.stringify({app:'Gongzuo',version:2,exportedAt:new Date().toISOString(),data:c.state},null,2),`gongzuo-lighting-${c.today()}.json`,c);
+  }
   return {
-    validate,
+    validate, exportAll,
     render(c){return `<div class="module-layout"><section class="panel"><h2>创作者档案</h2><p class="subtext">输入自动保存，生成时参考定位与表达风格。</p><form id="profile-form">${c.field('name','IP 名称',c.state.profile.name,{maxlength:60})}${c.field('niche','内容领域 / 目标人群',c.state.profile.niche,{maxlength:200})}${c.area('style','表达风格',c.state.profile.style)}<button class="primary">保存档案</button></form></section><div class="module-stack"><section class="panel"><h2>工作台外观</h2><p class="subtext">当前：${c.state.theme==='dark'?'深色':'浅色'}主题</p><button class="secondary" id="profile-theme">切换深色 / 浅色</button></section><section class="panel"><h2>数据备份与恢复</h2><p class="subtext">包含所有报告、灵感、选题、文案版本、直播、数据、设置及未完成草稿。数据只存于此浏览器，请定期备份。</p><button class="primary" id="export-data">${c.readError ? '导出原始存储（用于排查）' : '导出全部数据 JSON'}</button><form id="import-form"><div class="field"><label for="backup-file">选择备份文件（最大 20 MB）</label><input class="file-input" type="file" id="backup-file" accept=".json,application/json" required></div><p class="rule-note">恢复会覆盖当前全部数据。请先导出当前备份；导入前会校验格式，取消或校验失败不会修改数据。</p><button class="secondary" type="submit">校验并恢复备份</button></form></section></div></div>`;},
     mount(c){
       const form=document.getElementById('profile-form');
       form.addEventListener('input',()=>c.persist(s=>{s.profile=c.values(form);},'',false));
       form.addEventListener('submit',e=>{e.preventDefault();c.persist(s=>{s.profile=c.values(form);},'档案已保存',false);});
       document.getElementById('profile-theme').addEventListener('click',()=>{document.getElementById('theme-toggle').click();});
-      document.getElementById('export-data').addEventListener('click',()=>{
-        if(c.readError){try{download(localStorage.getItem(c.storageKey) || '',`gongzuo-raw-${c.today()}.json`,c);}catch{c.notify('无法读取本地存储，请检查浏览器权限');}return;}
-        download(JSON.stringify({app:'Gongzuo',version:1,exportedAt:new Date().toISOString(),data:c.state},null,2),`gongzuo-backup-${c.today()}.json`,c);
-      });
+      document.getElementById('export-data').addEventListener('click',()=>exportAll(c));
       document.getElementById('import-form').addEventListener('submit',async e=>{
         e.preventDefault();const input=document.getElementById('backup-file'),file=input.files[0];if(!file)return c.notify('请选择备份 JSON 文件');
         if(file.size>20*1024*1024)return c.notify('备份超过 20 MB，请选择较小文件');

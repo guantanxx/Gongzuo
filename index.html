@@ -1,10 +1,10 @@
 <!doctype html>
-<html lang="zh-CN">
+<html lang="zh-CN" data-theme="dark">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="color-scheme" content="light dark">
-  <title>创作舱 · 自媒体工作台</title>
+  <title>光序 · 商业照明内容工作台</title>
   <link rel="icon" href="favicon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="styles.css">
   <script src="modules/analysis.js" defer></script>
@@ -19,16 +19,18 @@
 <body>
   <a class="skip-link" href="#main">跳至主要内容</a>
   <aside class="sidebar" aria-label="工作台导航">
-    <a class="brand" href="#overview"><span class="brand-mark">C</span><span>创作舱<small>CREATOR WORKSPACE</small></span></a>
-    <p class="nav-label">创作工作流</p>
+    <div class="sidebar-head"><a class="brand" href="#overview"><span class="brand-mark" aria-hidden="true">L<span>／</span></span><span>光序<small>LIGHTING STUDIO</small></span></a><div class="quick-actions"><button id="quick-idea" class="secondary" type="button">＋ 新建灵感</button><button id="quick-export" class="secondary" type="button">↗ 导出全部</button></div></div>
+    <div class="global-search"><label class="sr-only" for="global-query">搜索全部内容</label><span aria-hidden="true">⌕</span><input id="global-query" type="search" placeholder="搜索全部内容…" maxlength="200" autocomplete="off" aria-controls="search-results" aria-expanded="false"><div id="search-results" class="search-results" hidden></div></div>
+    <p class="nav-label">WORKSPACE / 创作工作流</p>
     <nav id="navigation" aria-label="功能导航"></nav>
-    <div class="sidebar-note"><span class="status-dot"></span> 独立运行 · 本地存储<small>让每一个灵感，成为好内容。</small></div>
+    <div class="sidebar-note"><span class="status-dot"></span> 本地独立运行<small>商业照明 / 工程亮化 / 文旅灯具</small></div>
   </aside>
   <div class="workspace">
-    <header class="topbar"><span>我的工作空间 <span class="divider">/</span> <span id="breadcrumb">工作台概览</span></span><button id="theme-toggle" class="icon-button" type="button" aria-label="切换为深色主题">◐ <span>切换主题</span></button></header>
+    <header class="topbar"><span>商业照明内容工作室 <span class="divider">/</span> <span id="breadcrumb">工作台概览</span><span id="save-status" class="save-status" role="status">本地存储</span></span><button id="theme-toggle" class="icon-button" type="button" aria-label="切换为深色主题">◐ <span>切换主题</span></button></header>
     <main id="main" tabindex="-1"></main>
-    <footer>创作舱 · 把精力留给创作 <span>数据仅保存在当前浏览器</span></footer>
+    <footer>光序 LIGHTING STUDIO / 让专业被光看见 <span>数据仅保存在当前浏览器</span></footer>
   </div>
+  <aside id="task-widget" class="task-widget" aria-label="全局工作提醒"></aside>
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
 </body>
 </html>
