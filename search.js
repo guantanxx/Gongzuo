@@ -36,7 +36,7 @@
       change=s=>{s.drafts.tasks={title:r.title,category:r.category,due:r.due,notes:r.notes,editId:id,filter:'all'};};
     }else if(type==='analytics'){
       const r=c.state.metrics.find(x=>x.id===id);if(!r)return;
-      change=s=>{s.drafts.metrics={...r,editId:id};s.drafts.metricFilter={};};
+      change=s=>{s.drafts.metrics={...r,editId:id};s.drafts.metricFilter={};s.drafts.metricFilterDraft={};};
     }
     if(!change)return;
     hide();pendingFocus={type,id};
