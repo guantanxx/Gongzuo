@@ -2,15 +2,19 @@
 window.WorkspaceModules.ideas = {
   render(c) {
     const d=c.draft('ideas');
-    return `<div class="module-layout"><section class="panel"><h2>${d.editId ? '编辑灵感' : '记录新灵感'}</h2><form id="idea-form">${c.field('title','灵感标题',d.title,{required:true,maxlength:120})}${c.area('content','灵感内容 / 真实场景',d.content,true)}${c.field('tags','标签（逗号分隔）',d.tags,{placeholder:'职场,成长,经验'})}<div class="actions"><button class="primary">${d.editId ? '保存修改' : '加入灵感库'}</button><button class="secondary" type="button" id="new-idea">清空 / 新建</button></div></form></section><section class="panel"><h2>灵感库 · ${c.state.ideas.length}</h2><div class="toolbar">${c.field('search','检索标题 / 正文 / 标签',d.search)}${c.select('tagFilter','标签分类',[['','全部标签'],...[...new Set(c.state.ideas.flatMap(i=>i.tags))].sort().map(t=>[t,t])],d.tagFilter)}</div><div id="idea-list"></div></section></div>`;
+    return `<div class="module-layout"><section class="panel"><h2>${d.editId ? '编辑灵感' : '记录新灵感'}</h2><form id="idea-form">${c.field('title','灵感标题',d.title,{required:true,maxlength:120})}${c.area('content','灵感内容 / 真实场景',d.content,true)}${c.field('tags','标签（逗号分隔）',d.tags,{placeholder:'投影灯,工程案例'})}<div class="tag-picker" aria-label="常用行业标签">${['投影灯','水纹灯','激光灯','文旅亮化','工程案例','工厂实拍'].map(t=>`<button class="secondary" type="button" data-idea-tag="${t}">${t}</button>`).join('')}</div><div class="actions"><button class="primary">${d.editId ? '保存修改' : '加入灵感库'}</button><button class="secondary" type="button" id="new-idea">清空 / 新建</button></div></form></section><section class="panel"><h2>灵感库 · ${c.state.ideas.length}</h2><div class="toolbar">${c.field('search','检索标题 / 正文 / 标签',d.search)}${c.select('tagFilter','标签分类',[['','全部标签'],...[...new Set(['投影灯','水纹灯','激光灯','文旅亮化','工程案例','工厂实拍',...c.state.ideas.flatMap(i=>i.tags)])].sort().map(t=>[t,t])],d.tagFilter)}</div><div id="idea-list"></div></section></div>`;
   },
   mount(c) {
     const form=document.getElementById('idea-form');c.bindDraft(form,'ideas');
+    document.querySelectorAll('[data-idea-tag]').forEach(button=>button.addEventListener('click',()=>{
+      const input=form.elements.tags,tags=input.value.split(/[,，、|｜\n]/).map(t=>t.trim()).filter(Boolean),tag=button.dataset.ideaTag;
+      input.value=(tags.includes(tag)?tags.filter(t=>t!==tag):[...tags,tag]).join(', ');input.dispatchEvent(new Event('input',{bubbles:true}));c.notify('标签已更新');
+    }));
     form.addEventListener('submit',e=>{
       e.preventDefault();const v=c.values(form);if(!v.title.trim() || !v.content.trim()) return c.notify('请填写标题和内容');
       const d=c.draft('ideas');
       c.persist(s=>{
-        const item={id:d.editId || c.uid(),title:v.title.trim(),content:v.content.trim(),tags:[...new Set(v.tags.split(/[,，、\n]/).map(t=>t.trim()).filter(Boolean))].slice(0,20),updatedAt:new Date().toISOString()};
+        const item={id:d.editId || c.uid(),title:v.title.trim(),content:v.content.trim(),tags:[...new Set(v.tags.split(/[,，、|｜\n]/).map(t=>t.trim()).filter(Boolean))].slice(0,20),updatedAt:new Date().toISOString()};
         const i=s.ideas.findIndex(x=>x.id===item.id);
         if(i>=0)s.ideas[i]={...s.ideas[i],...item};else s.ideas.unshift({...item,createdAt:item.updatedAt});
         s.drafts.ideas={search:d.search || '',tagFilter:d.tagFilter || ''};
