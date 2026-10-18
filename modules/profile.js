@@ -58,8 +58,8 @@ window.WorkspaceModules.profile = (()=>{
           case 'reports': return {...base,url:text(row.url,500),text:text(row.text),report:report(row.report),createdAt:timestamp(row.createdAt)};
           case 'ideas': return {...base,title:text(row.title,120),content:text(row.content),tags:list(row.tags).map(t=>text(t,500)),createdAt:timestamp(row.createdAt),updatedAt:timestamp(row.updatedAt)};
           case 'topics':
-            if(!['待写','制作','已发布'].includes(row.status))fail('选题状态无效');
-            return {...base,title:text(row.title,500),cover:text(row.cover,500),hook:text(row.hook,1000),angle:text(row.angle,100),source:text(row.source),ideaId:text(row.ideaId,200),status:row.status,createdAt:timestamp(row.createdAt)};
+            if(!['待写','制作','待撰写','拍摄中','已发布'].includes(row.status))fail('选题状态无效');
+            return {...base,title:text(row.title,500),cover:text(row.cover,500),hook:text(row.hook,1000),angle:text(row.angle,100),source:text(row.source),ideaId:text(row.ideaId,200),status:({'待写':'待撰写','制作':'拍摄中'}[row.status] || row.status),createdAt:timestamp(row.createdAt)};
           case 'scripts':{
             const versions=unique(list(row.versions)).map(v=>({id:id(v.id),text:text(v.text),createdAt:timestamp(v.createdAt),duration:integer(v.duration,10,600),title:text(v.title,200)}));
             if(!versions.length)fail('文案缺少历史版本');
@@ -75,7 +75,7 @@ window.WorkspaceModules.profile = (()=>{
         }
       });
     }
-    state.drafts=validateDrafts(raw.drafts || {});return state;
+    state.drafts=validateDrafts(raw.drafts || {});if(state.drafts.topics?.statusFilter)state.drafts.topics.statusFilter=({'待写':'待撰写','制作':'拍摄中'}[state.drafts.topics.statusFilter] || state.drafts.topics.statusFilter);return state;
   }
   function download(content,name,c) {
     const url=URL.createObjectURL(new Blob([content],{type:'application/json;charset=utf-8'}));

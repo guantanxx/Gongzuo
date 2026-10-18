@@ -83,7 +83,7 @@ window.WorkspaceModules.scripts = (()=>{
           if(!item){item={id:c.uid(),title:v.title.trim(),topicId:v.topicId || '',notes:v.notes || '',hook:v.hook || '',duration:Number(v.duration),versions:[],createdAt:now,updatedAt:now};s.scripts.unshift(item);}
           item.title=v.title.trim();item.duration=Number(v.duration);item.notes=v.notes || '';item.hook=v.hook || '';item.updatedAt=now;item.versions.push(version);
           s.drafts.scripts={...v,text,docId:item.id,versionId:version.id};
-          const topic=s.topics.find(t=>t.id===item.topicId);if(topic?.status==='待写')topic.status='制作';
+          const topic=s.topics.find(t=>t.id===item.topicId);if(topic?.status==='待撰写')topic.status='拍摄中';
         },'新版本已保存，历史版本保留');
       });
       document.getElementById('f-version').addEventListener('change',e=>{
