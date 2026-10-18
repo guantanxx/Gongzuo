@@ -29,7 +29,7 @@ window.WorkspaceModules.scripts = (()=>{
       p=>`把“${p}”拍成一个清楚的镜头：先交代条件，再展示过程，最后给出适用范围。不要用滤镜替代真实演示。`,
       p=>`结论回到“${p}”。没有现场数据时，先说明需要确认什么，而不是直接保证亮度、交期或节省比例。`
     ];
-    const ending=target<120 ? '项目条件私信沟通，先核对再选型。' : `有${shortTitle}相关项目，可以私信应用场景、安装距离、预计数量和交付时间。先核对参数与打样条件，再讨论适合的配置。${c.state.profile.contact || ''}`;
+    const ending=target<200 ? '项目条件私信沟通，先核对再选型。' : `有${shortTitle}相关项目，可以私信应用场景、安装距离、预计数量和交付时间。先核对参数与打样条件，再讨论适合的配置。${target>500 ? (c.state.profile.contact || '').slice(0,80) : ''}`;
     let text=opening;
     if(count(text+intro+ending)<target*0.8)text+='\n\n'+intro;
     let index=0;

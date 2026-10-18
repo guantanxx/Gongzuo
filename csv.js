@@ -28,7 +28,7 @@
   }
   function readRows(source,type){
     const rows=parse(source),spec=specs[type];if(rows.length<2)throw new Error('CSV 仅有表头或没有数据行');
-    const aliases=new Map(spec.columns.flatMap(([key,label])=>[[key.toLowerCase(),key],[label,key]]));
+    const aliases=new Map(spec.columns.flatMap(([key,label])=>[[key.toLowerCase(),key],[label.toLowerCase(),key]]));
     const keys=rows[0].map(header=>{const key=aliases.get(header.trim().toLowerCase());if(!key)throw new Error(`未知列：${header}，请使用本模块导出的表头`);return key;});
     if(new Set(keys).size!==keys.length)throw new Error('CSV 包含重复列');
     if(!spec.required.every(key=>keys.includes(key)))throw new Error(`缺少必需列：${spec.required.map(k=>spec.columns.find(([key])=>key===k)[1]).join('、')}`);
