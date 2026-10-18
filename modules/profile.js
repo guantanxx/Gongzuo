@@ -28,7 +28,7 @@ window.WorkspaceModules.profile = (()=>{
       if(key==='liveReviews'){
         for(const review of Object.values(result[key])){if(!obj(review) || Object.values(review).some(v=>typeof v!=='string'))fail('直播复盘草稿无效');}
       }else for(const [name,value] of Object.entries(result[key])){
-        if(name==='result' && key==='analysis'){report(value);continue;}
+        if(name==='result' && key==='analysis'){result[key][name]=report(value);continue;}
         if(key==='topics' && name==='autoGenerate'){if(typeof value!=='boolean')fail('选题草稿无效');continue;}
         if(typeof value==='number'){
           const numeric=(key==='metrics' && ['plays','likes','comments','shares','leads','messages','contacts'].includes(name)) || (key==='scripts' && name==='target');
@@ -41,11 +41,12 @@ window.WorkspaceModules.profile = (()=>{
   function report(r){if(!obj(r))fail('分析报告格式无效');return {...Object.fromEntries(['hook','audience','structure','conflict','highlights','advice'].map(k=>[k,text(r[k],500000)])),pain:text(r.pain ?? '早期报告未包含客户痛点，可重新分析。',500000),conversion:text(r.conversion ?? '早期报告未包含转化话术，可重新分析。',500000)};}
   function validate(payload,c){
     if(!obj(payload))fail('请选择有效的 JSON 备份');
-    if(payload.app!==undefined && payload.app!=='Gongzuo')fail('这不是创作舱备份');
+    if(payload.app!==undefined && payload.app!=='Gongzuo')fail('这不是光序工作台备份');
     if(payload.version!==undefined && ![1,2].includes(payload.version))fail('不支持此备份版本');
     const raw=payload.app==='Gongzuo'?payload.data:payload;
     if(!obj(raw) || (raw.schemaVersion!==undefined && ![1,2].includes(raw.schemaVersion)))fail('备份数据版本无效');
     safeTree(raw);
+    if(raw.schemaVersion===2 && (!Array.isArray(raw.tasks) || !Array.isArray(raw.templates)))fail('版本 2 备份缺少待办或模板列表');
     if(!obj(raw.profile) || !['light','dark'].includes(raw.theme))fail('备份缺少有效个人设置');
     const state=c.initial();state.theme=raw.theme;
     state.profile={name:text(raw.profile.name,60),niche:text(raw.profile.niche,200),style:text(raw.profile.style),products:text(raw.profile.products ?? '',500),contact:text(raw.profile.contact ?? '',500)};
@@ -95,11 +96,11 @@ window.WorkspaceModules.profile = (()=>{
   }
   return {
     validate, exportAll,
-    render(c){return `<div class="module-layout"><section class="panel"><h2>创作者档案</h2><p class="subtext">输入自动保存，生成时参考定位与表达风格。</p><form id="profile-form">${c.field('name','IP 名称',c.state.profile.name,{maxlength:60})}${c.field('niche','内容领域 / 目标人群',c.state.profile.niche,{maxlength:200})}${c.area('style','表达风格',c.state.profile.style)}<button class="primary">保存档案</button></form></section><div class="module-stack"><section class="panel"><h2>工作台外观</h2><p class="subtext">当前：${c.state.theme==='dark'?'深色':'浅色'}主题</p><button class="secondary" id="profile-theme">切换深色 / 浅色</button></section><section class="panel"><h2>数据备份与恢复</h2><p class="subtext">包含所有报告、灵感、选题、文案版本、直播、数据、设置及未完成草稿。数据只存于此浏览器，请定期备份。</p><button class="primary" id="export-data">${c.readError ? '导出原始存储（用于排查）' : '导出全部数据 JSON'}</button><form id="import-form"><div class="field"><label for="backup-file">选择备份文件（最大 20 MB）</label><input class="file-input" type="file" id="backup-file" accept=".json,application/json" required></div><p class="rule-note">恢复会覆盖当前全部数据。请先导出当前备份；导入前会校验格式，取消或校验失败不会修改数据。</p><button class="secondary" type="submit">校验并恢复备份</button></form></section></div></div>`;},
+    render(c){return `<div class="module-layout"><section class="panel"><h2>创作者档案</h2><p class="subtext">输入自动保存，生成时参考定位与表达风格。</p><form id="profile-form">${c.field('name','IP 名称',c.state.profile.name,{maxlength:60})}${c.field('niche','内容领域 / 目标人群',c.state.profile.niche,{maxlength:200})}${c.field('products','主营产品 / 产品方向',c.state.profile.products,{maxlength:500})}${c.area('style','表达风格',c.state.profile.style)}${c.field('contact','询盘承接补充话术（可选）',c.state.profile.contact,{maxlength:500,placeholder:'例如：可先私信项目场景与安装距离'})}<button class="primary">保存档案</button></form></section><div class="module-stack"><section class="panel"><h2>工作台外观</h2><p class="subtext">当前：${c.state.theme==='dark'?'深色':'浅色'}主题</p><button class="secondary" id="profile-theme">切换深色 / 浅色</button></section><section class="panel"><h2>数据备份与恢复</h2><p class="subtext">包含所有报告、灵感、选题、文案版本、直播、视频数据、自定义模板、全局待办、设置及未完成草稿。数据只存于此浏览器，请定期备份。</p><button class="primary" id="export-data">${c.readError ? '导出原始存储（用于排查）' : '导出全部数据 JSON'}</button><form id="import-form"><div class="field"><label for="backup-file">选择备份文件（最大 20 MB）</label><input class="file-input" type="file" id="backup-file" accept=".json,application/json" required></div><p class="rule-note">恢复会覆盖当前全部数据。请先导出当前备份；导入前会校验格式，取消或校验失败不会修改数据。</p><button class="secondary" type="submit">校验并恢复备份</button></form></section></div></div>`;},
     mount(c){
       const form=document.getElementById('profile-form');
-      form.addEventListener('input',()=>c.persist(s=>{s.profile=c.values(form);},'',false));
-      form.addEventListener('submit',e=>{e.preventDefault();c.persist(s=>{s.profile=c.values(form);},'档案已保存',false);});
+      form.addEventListener('input',()=>c.persist(s=>{s.profile={...s.profile,...c.values(form)};},'',false));
+      form.addEventListener('submit',e=>{e.preventDefault();c.persist(s=>{s.profile={...s.profile,...c.values(form)};},'档案已保存',false);});
       document.getElementById('profile-theme').addEventListener('click',()=>{document.getElementById('theme-toggle').click();});
       document.getElementById('export-data').addEventListener('click',()=>exportAll(c));
       document.getElementById('import-form').addEventListener('submit',async e=>{
@@ -108,7 +109,7 @@ window.WorkspaceModules.profile = (()=>{
         const button=e.target.querySelector('button');button.disabled=true;
         try {
           const parsed=JSON.parse((await file.text()).replace(/^\uFEFF/,'')),next=validate(parsed,c);
-          if(confirm(`备份校验通过：${next.ideas.length} 条灵感、${next.topics.length} 条选题、${next.scripts.length} 份文案、${next.lives.length} 场直播。\n恢复将覆盖当前全部数据，是否继续？`))c.replaceState(next);
+          if(confirm(`备份校验通过：${next.ideas.length} 条灵感、${next.topics.length} 条选题、${next.scripts.length} 份文案、${next.lives.length} 场直播、${next.templates.length} 个自定义模板、${next.tasks.length} 条待办。\n恢复将覆盖当前全部数据，是否继续？`))c.replaceState(next);
           else c.notify('已取消恢复，原数据保留');
         }catch(error){c.notify(`未导入：${error instanceof SyntaxError ? 'JSON 格式错误' : error.message}`);}
         finally{input.value='';button.disabled=false;}

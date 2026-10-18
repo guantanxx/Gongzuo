@@ -29,7 +29,7 @@
     toastTimer = setTimeout(() => toast.classList.remove('visible'), 3500);
   }
   function persist(change, message = '', redraw = true) {
-    if (readError) { notify('本地数据读取失败。请先在个人中心导出原始数据或恢复有效备份，避免覆盖。'); return false; }
+    if (readError) { notify('本地数据读取失败。请先在工作台设置导出原始数据或恢复有效备份，避免覆盖。'); return false; }
     const next = JSON.parse(JSON.stringify(state));
     change(next);
     try { localStorage.setItem(STORAGE_KEY, JSON.stringify(next)); }
@@ -81,7 +81,7 @@
   const ctx = { get sections() { return sections; }, tools: window.WorkspaceTools, get signal() { return renderController.signal; }, get state() { return state; }, persist, esc, uid, date, today, field, area, select, empty, values, draft, bindDraft, notify, go, render, heading, get readError() { return readError; }, storageKey: STORAGE_KEY, initial, replaceState(next) {
     try { localStorage.setItem(STORAGE_KEY, JSON.stringify(next)); }
     catch { notify('恢复失败：本地存储不可用或空间不足，原数据未变。'); return false; }
-    state = next; readError = false; applyTheme(); render(); notify('备份恢复成功'); return true;
+    state = next; readError = false; document.getElementById('global-query').value=state.drafts.search?.query || ''; window.WorkspaceTools?.refreshSearch?.(ctx); applyTheme(); render(); notify('备份恢复成功'); return true;
   }};
   function render() {
     renderController.abort(); renderController = new AbortController();
@@ -100,9 +100,9 @@
 
   }
   window.addEventListener('hashchange', () => { render(); window.scrollTo(0, 0); document.getElementById('main').focus({ preventScroll: true }); });
-  document.getElementById('quick-idea').addEventListener('click', () => { if (!state.drafts.ideas?.title || confirm('新建会清空当前灵感编辑草稿，已保存灵感保留。继续？')) { if (persist(s=>{s.drafts.ideas={};},'',false)) { go('ideas'); notify('可以记录新灵感了'); } } });
+  document.getElementById('quick-idea').addEventListener('click', () => { if (!['title','content','tags'].some(k=>state.drafts.ideas?.[k]) || confirm('新建会清空当前灵感编辑草稿，已保存灵感保留。继续？')) { if (persist(s=>{s.drafts.ideas={};},'',false)) { go('ideas'); notify('可以记录新灵感了'); } } });
   document.getElementById('quick-export').addEventListener('click', () => window.WorkspaceModules.profile.exportAll(ctx));
   window.WorkspaceTools?.initGlobal?.(ctx);
   applyTheme(); render();
-  if (readError) notify('本地数据读取失败，已暂停写入。请前往个人中心恢复备份。');
+  if (readError) notify('本地数据读取失败，已暂停写入。请前往工作台设置恢复备份。');
 })();
