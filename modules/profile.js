@@ -21,7 +21,7 @@ window.WorkspaceModules.profile = (()=>{
   function validateDrafts(drafts){
     if(!obj(drafts))fail('草稿格式无效');
     const result=safeTree(drafts);
-    const allowed=['analysis','ideas','topics','scripts','livePlan','liveReviews','metrics','metricFilter'];
+    const allowed=['analysis','ideas','topics','scripts','livePlan','liveReviews','metrics','metricFilter','templates'];
     for(const key of Object.keys(result)){
       if(!allowed.includes(key))fail('备份包含未知草稿类型');
       if(!obj(result[key]))fail('草稿必须为对象');
@@ -75,6 +75,10 @@ window.WorkspaceModules.profile = (()=>{
         }
       });
     }
+    state.templates=unique(list(raw.templates ?? [])).map(t=>{
+      if(!['口播模板','直播开场','询盘话术'].includes(t.category) || t.id.startsWith('builtin-'))fail('自定义模板类型或 ID 无效');
+      return {id:id(t.id),title:text(t.title,160),category:t.category,body:text(t.body),createdAt:timestamp(t.createdAt),updatedAt:timestamp(t.updatedAt)};
+    });
     state.drafts=validateDrafts(raw.drafts || {});if(state.drafts.topics?.statusFilter)state.drafts.topics.statusFilter=({'待写':'待撰写','制作':'拍摄中'}[state.drafts.topics.statusFilter] || state.drafts.topics.statusFilter);return state;
   }
   function download(content,name,c) {
