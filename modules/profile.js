@@ -21,7 +21,7 @@ window.WorkspaceModules.profile = (()=>{
   function validateDrafts(drafts){
     if(!obj(drafts))fail('草稿格式无效');
     const result=safeTree(drafts);
-    const allowed=['analysis','ideas','topics','scripts','livePlan','liveReviews','metrics','metricFilter','templates','tasks','taskWidget'];
+    const allowed=['analysis','ideas','topics','scripts','livePlan','liveReviews','metrics','metricFilter','templates','tasks','taskWidget','search'];
     for(const key of Object.keys(result)){
       if(!allowed.includes(key))fail('备份包含未知草稿类型');
       if(!obj(result[key]))fail('草稿必须为对象');

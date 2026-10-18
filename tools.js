@@ -19,6 +19,7 @@ window.WorkspaceTools = {
     const a=document.createElement('a');a.href=url;a.download=name;document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);
   },
   initGlobal(c) {
+    this.initSearch?.(c);
     document.addEventListener('click',event=>{
       const button=event.target.closest('[data-copy-target],[data-copy-text]');if(!button)return;
       const target=button.dataset.copyTarget?document.getElementById(button.dataset.copyTarget):null;
