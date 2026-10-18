@@ -9,27 +9,27 @@ window.WorkspaceModules.scripts = (()=>{
     const brief=/简洁|直接|短句/.test(c.state.profile.style) || (sentences.length>0 && count(latest)/sentences.length<30);
     const warm=/温柔|亲切|陪伴/.test(c.state.profile.style);
     const shortTitle=[...title].slice(0,Math.min(40,Math.max(6,Math.floor(target*0.25)))).join('');
-    const opening=v.hook?.trim() && count(v.hook)<=target*0.4 ? v.hook.trim() : `关于${shortTitle}，先想清一个问题。`;
-    const intro=warm ? '先别着急，我们把这件事一步一步说清楚。' : brief ? '先说重点，从最小的一步开始。' : '与其一开始追求完整答案，不如先把眼前的问题讲清楚。';
-    const subject=points.length?points:['先确定你具体想解决的问题','选择一个能在今天完成的小动作','做完后记录反馈，再调整下一步'];
+    const opening=v.hook?.trim() && count(v.hook)<=target*0.4 ? v.hook.trim() : `选${shortTitle}，先核对现场。`;
+    const intro=warm ? '不着急定配置，我们先一起把项目条件说清楚。' : brief ? '先看场景，再核参数，最后谈交付。' : `面向${c.state.profile.niche || '总包、装修公司与甲方'}，先把需求与现场条件放在同一张表上。`;
+    const subject=points.length?points:['确认环境光、安装距离和预期画面尺寸','核对灯具防护、供电、控制和安装条件','用样品验证效果，再确认数量与交付排期'];
     const templates=[
-      p=>`先看这一点：${p}。把它放进你自己的场景里，想一想，最困扰你的到底是哪一个环节？`,
-      p=>`围绕“${p}”，不要急着照搬别人的答案。先列出你已有的条件，再确定下一步能做什么。`,
-      p=>`具体怎么落地？从“${p}”里挑一个最容易执行的动作，给它留出明确的时间，完成后马上记下来。`,
-      p=>`如果卡住了，就把“${p}”拆得更小。今天只验证一个问题，不用同时改变所有事情。`,
-      p=>`判断“${p}”有没有用，不能只凭当时的感觉。试着保留过程和结果，过一段时间再做对照。`,
-      p=>`这里容易忽略的，是自己的实际限制。“${p}”需要哪些时间或资源？先把这些条件讲明白。`,
-      p=>`也要给“${p}”设置边界。适合当前阶段的方法，换一个场景未必适用，别把单次体验当成普遍规律。`,
-      p=>`关于“${p}”，你可以找一个熟悉的人交流。先听对方遇到了什么，再回头检查自己的理解。`,
-      p=>`再换一个角度看“${p}”：如果只能保留一个动作，你会留下什么？这个问题能帮你确定优先顺序。`,
-      p=>`把“${p}”写成一句清楚的行动说明。谁来做、什么时候做、做到什么程度，都尽量具体。`,
-      p=>`执行“${p}”的时候，记下最费力的地方。这些卡点比一句笼统的评价更能帮助你改进。`,
-      p=>`如果“${p}”没有达到预期，先检查执行条件，再检查方法。不要因为一次结果就急着否定整个方向。`,
-      p=>`要让“${p}”变得可持续，可以固定一个简单的触发点。把它接在已有习惯之后，减少每次重新决定的成本。`,
-      p=>`对于“${p}”，也别忽略你已经做对的部分。保留有效的动作，再单独调整那个最不顺的环节。`,
-      p=>`最后再检查“${p}”：这个建议是否适合你现在的情况？遇到专业问题时，记得向相关专业人士核实。`
+      p=>`先看这一点：${p}。同样的灯具，安装距离和环境光不同，效果不能直接照搬。`,
+      p=>`再核对“${p}”。演示时保持曝光和测试距离一致，把使用条件标在画面上，客户才有比较依据。`,
+      p=>`落实“${p}”，需要把安装位置、供电和走线条件记录清楚，施工接口也提前对齐。`,
+      p=>`关于“${p}”，建议先安排样品验证。效果是否满足项目要求，应以约定条件下的实测为准。`,
+      p=>`采购时别只看单台价格。“${p}”还涉及配件、安装、控制和维护，报价范围要放在同一口径下比较。`,
+      p=>`交付前再检查“${p}”。把数量、配置、交付时间和验收方法写清，减少现场临时变更。`,
+      p=>`户外项目还要补充“${p}”的使用边界。防护等级、散热、固定方式与检修空间，需要结合实际环境核对。`,
+      p=>`如果是水纹灯或投影灯，“${p}”不能只凭近景样片判断。先说明投射介质、距离和环境照度。`,
+      p=>`文旅亮化项目里，“${p}”也要和整体灯光节奏配合，控制接口、场景切换与调试责任提前确认。`,
+      p=>`激光类产品涉及专门的安全与使用条件。“${p}”应由具备相关能力的人员核实，避免对人眼或交通造成风险。`,
+      p=>`对总包和装修公司来说，“${p}”最终要落到施工衔接。谁确认点位、谁安排调试、谁记录验收，都应明确。`,
+      p=>`对于经销合作，“${p}”可以先从小批量样品沟通开始。产品资料、售后范围与备货计划，要用可核实的信息说明。`,
+      p=>`甲方通常关心效果能否持续。“${p}”之外，也应明确易损件、维护方式及质保条款，不用未经验证的寿命做承诺。`,
+      p=>`把“${p}”拍成一个清楚的镜头：先交代条件，再展示过程，最后给出适用范围。不要用滤镜替代真实演示。`,
+      p=>`结论回到“${p}”。没有现场数据时，先说明需要确认什么，而不是直接保证亮度、交期或节省比例。`
     ];
-    const ending=target<120 ? '先做一个小动作，做完再复盘。' : `回到${shortTitle}，先选一个你能完成的小动作。做完再复盘，比停留在想法里更有价值。你准备先试哪一步？`;
+    const ending=target<120 ? '项目条件私信沟通，先核对再选型。' : `有${shortTitle}相关项目，可以私信应用场景、安装距离、预计数量和交付时间。先核对参数与打样条件，再讨论适合的配置。${c.state.profile.contact || ''}`;
     let text=opening;
     if(count(text+intro+ending)<target*0.8)text+='\n\n'+intro;
     let index=0;
@@ -42,7 +42,7 @@ window.WorkspaceModules.scripts = (()=>{
       }
       index++;
     }
-    for(const extra of ['先把目标写清楚。','别急着做大，先验证一小步。','观察反馈，再做调整。']){
+    for(const extra of ['先确认现场条件。','参数以实测为准。','打样后再确认配置。']){
       if(count(text+ending)>=target*0.9)break;
       if(count(text+extra+ending)<=target*1.1)text+='\n'+extra;
     }
@@ -52,7 +52,7 @@ window.WorkspaceModules.scripts = (()=>{
   return {
     render(c) {
       const d=c.draft('scripts'),doc=c.state.scripts.find(s=>s.id===d.docId);
-      return `<p class="rule-note">按约 3.5 字 / 秒估算篇幅，实际时长需朗读确认。生成采用本地模板，参考 IP 风格与最近保存稿件的句长偏好；请补充真实案例和专业事实。</p><div class="module-layout"><section class="panel"><h2>口播创作</h2><form id="script-form">${c.select('topicId','选用已有选题（也可直接输入）',[['','自定义选题'],...c.state.topics.map(t=>[t.id,t.title])],d.topicId)}${c.field('title','选题标题',d.title,{required:true,maxlength:200})}${c.field('duration','视频时长（秒，10–600）',d.duration || 60,{type:'number',min:10,max:600,required:true})}${c.area('notes','核心观点 / 案例素材',d.notes)}${c.field('hook','开头钩子（可选）',d.hook)}<div class="actions"><button class="primary">生成口播稿</button><button class="secondary" type="button" id="new-script">新建文案</button></div></form></section><section class="panel"><h2>${doc ? '编辑文案 · '+c.esc(doc.title) : '文案草稿'}</h2><div class="toolbar">${c.select('version','历史版本',[['','选择历史版本'],...(doc?.versions || []).map((v,i)=>[v.id,`V${i+1} · ${c.date(v.createdAt)}`])],d.versionId)}</div><div class="field"><label for="script-text">口播正文（编辑后自动保存草稿）</label><textarea class="script-editor" id="script-text" maxlength="30000">${c.esc(d.text || '')}</textarea></div><p class="subtext" id="script-count"></p><div class="actions"><button class="primary" id="save-version" ${d.text?.trim() ? '' : 'disabled'}>保存为新版本</button></div></section><section class="panel full-width"><h2>文案库 · ${c.state.scripts.length}</h2>${c.state.scripts.length ? c.state.scripts.map(s=>`<article class="record"><h3>${c.esc(docName(s))}</h3><p class="subtext">${c.esc(s.duration)} 秒 · 最近更新 ${c.date(s.updatedAt)}</p><div class="actions"><button class="secondary" data-open-script="${c.esc(s.id)}">打开 / 切换版本</button><button class="secondary danger" data-delete-script="${c.esc(s.id)}">删除文案</button></div></article>`).join('') : c.empty('生成或编辑正文后，保存你的第一个版本。')}</section></div>`;
+      return `<p class="rule-note">按约 3.5 字 / 秒估算篇幅，实际时长需朗读确认。生成采用本地模板，参考 IP 风格与最近保存稿件的句长偏好；请补充真实案例和专业事实。</p><div class="module-layout"><section class="panel"><h2>工程向口播</h2><form id="script-form">${c.select('topicId','选用已有选题（也可直接输入）',[['','自定义选题'],...c.state.topics.map(t=>[t.id,t.title])],d.topicId)}${c.field('title','选题标题',d.title,{required:true,maxlength:200})}${c.field('duration','视频时长（秒，10–600）',d.duration || 60,{type:'number',min:10,max:600,required:true})}${c.area('notes','工程条件 / 真实参数 / 案例素材',d.notes)}${c.field('hook','开头钩子（可选）',d.hook)}<div class="actions"><button class="primary">生成口播稿</button><button class="secondary" type="button" id="new-script">新建文案</button></div></form></section><section class="panel"><h2>${doc ? '编辑文案 · '+c.esc(doc.title) : '文案草稿'}</h2><div class="toolbar">${c.select('version','历史版本',[['','选择历史版本'],...(doc?.versions || []).map((v,i)=>[v.id,`V${i+1} · ${c.date(v.createdAt)}`])],d.versionId)}</div><div class="field"><label for="script-text">口播正文（编辑后自动保存草稿）</label><textarea class="script-editor" id="script-text" maxlength="30000">${c.esc(d.text || '')}</textarea></div><p class="subtext" id="script-count"></p><div class="actions"><button class="primary" id="save-version" ${d.text?.trim() ? '' : 'disabled'}>保存为新版本</button><button class="secondary" data-copy-target="script-text">复制当前文案</button></div></section><section class="panel full-width"><h2>文案库 · ${c.state.scripts.length}</h2>${c.state.scripts.length ? c.state.scripts.map(s=>`<article class="record"><h3>${c.esc(docName(s))}</h3><p class="subtext">${c.esc(s.duration)} 秒 · 最近更新 ${c.date(s.updatedAt)}</p><div class="actions"><button class="secondary" data-open-script="${c.esc(s.id)}">打开 / 切换版本</button><button class="secondary" data-copy-text="${c.esc(s.versions.at(-1).text)}">复制最新版本</button><button class="secondary danger" data-delete-script="${c.esc(s.id)}">删除文案</button></div></article>`).join('') : c.empty('生成或编辑正文后，保存你的第一个版本。')}</section></div>`;
     },
     mount(c) {
       const form=document.getElementById('script-form'),editor=document.getElementById('script-text');c.bindDraft(form,'scripts',['topicId']);
