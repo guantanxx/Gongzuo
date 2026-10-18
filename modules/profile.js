@@ -21,7 +21,7 @@ window.WorkspaceModules.profile = (()=>{
   function validateDrafts(drafts){
     if(!obj(drafts))fail('草稿格式无效');
     const result=safeTree(drafts);
-    const allowed=['analysis','ideas','topics','scripts','livePlan','liveReviews','metrics','metricFilter','templates'];
+    const allowed=['analysis','ideas','topics','scripts','livePlan','liveReviews','metrics','metricFilter','templates','tasks','taskWidget'];
     for(const key of Object.keys(result)){
       if(!allowed.includes(key))fail('备份包含未知草稿类型');
       if(!obj(result[key]))fail('草稿必须为对象');
@@ -75,6 +75,10 @@ window.WorkspaceModules.profile = (()=>{
         }
       });
     }
+    state.tasks=unique(list(raw.tasks ?? [])).map(t=>{
+      if(!['拍摄','脚本截止','客户对接'].includes(t.category) || typeof t.done!=='boolean')fail('待办事项格式无效');
+      return {id:id(t.id),title:text(t.title,160),category:t.category,due:t.due?day(t.due):'',notes:text(t.notes),done:t.done,createdAt:timestamp(t.createdAt),updatedAt:timestamp(t.updatedAt)};
+    });
     state.templates=unique(list(raw.templates ?? [])).map(t=>{
       if(!['口播模板','直播开场','询盘话术'].includes(t.category) || t.id.startsWith('builtin-'))fail('自定义模板类型或 ID 无效');
       return {id:id(t.id),title:text(t.title,160),category:t.category,body:text(t.body),createdAt:timestamp(t.createdAt),updatedAt:timestamp(t.updatedAt)};
