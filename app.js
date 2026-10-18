@@ -7,12 +7,7 @@
   let readError = false;
   try {
     const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null');
-    if (saved && typeof saved === 'object' && !Array.isArray(saved)) {
-      state.theme = saved.theme === 'dark' ? 'dark' : 'light';
-      for (const key of Object.keys(state.profile)) if (typeof saved.profile?.[key] === 'string') state.profile[key] = saved.profile[key];
-      for (const key of collections) if (Array.isArray(saved[key])) state[key] = saved[key];
-      if (saved.drafts && typeof saved.drafts === 'object' && !Array.isArray(saved.drafts)) state.drafts = saved.drafts;
-    }
+    if (saved !== null) state = window.WorkspaceModules.profile.validate(saved, { initial });
   } catch { readError = true; }
   const sections = [
     { id: 'overview', name: '工作台概览', icon: '◫' },
@@ -63,7 +58,7 @@
     document.getElementById('theme-toggle').setAttribute('aria-label', `切换为${state.theme === 'dark' ? '浅' : '深'}色主题`);
   }
   document.getElementById('theme-toggle').addEventListener('click', () => {
-    if (persist(s => { s.theme = s.theme === 'dark' ? 'light' : 'dark'; }, '主题已保存', false)) applyTheme();
+    if (persist(s => { s.theme = s.theme === 'dark' ? 'light' : 'dark'; }, '主题已保存', false)) { applyTheme(); render(); }
   });
   const nav = document.getElementById('navigation');
   nav.innerHTML = sections.map(s => `<a class="nav-item" href="#${s.id}" data-page="${s.id}"><span class="nav-icon" aria-hidden="true">${s.icon}</span>${s.name}</a>`).join('');

@@ -8,7 +8,8 @@ window.WorkspaceModules.scripts = (()=>{
     const sentences=latest.split(/[。！？]/).filter(Boolean);
     const brief=/简洁|直接|短句/.test(c.state.profile.style) || (sentences.length>0 && count(latest)/sentences.length<30);
     const warm=/温柔|亲切|陪伴/.test(c.state.profile.style);
-    const opening=v.hook?.trim() || `${title}，到底应该从哪里开始？`;
+    const shortTitle=[...title].slice(0,Math.min(40,Math.max(6,Math.floor(target*0.25)))).join('');
+    const opening=v.hook?.trim() && count(v.hook)<=target*0.4 ? v.hook.trim() : `关于${shortTitle}，先想清一个问题。`;
     const intro=warm ? '先别着急，我们把这件事一步一步说清楚。' : brief ? '先说重点，从最小的一步开始。' : '与其一开始追求完整答案，不如先把眼前的问题讲清楚。';
     const subject=points.length?points:['先确定你具体想解决的问题','选择一个能在今天完成的小动作','做完后记录反馈，再调整下一步'];
     const templates=[
@@ -28,22 +29,22 @@ window.WorkspaceModules.scripts = (()=>{
       p=>`对于“${p}”，也别忽略你已经做对的部分。保留有效的动作，再单独调整那个最不顺的环节。`,
       p=>`最后再检查“${p}”：这个建议是否适合你现在的情况？遇到专业问题时，记得向相关专业人士核实。`
     ];
-    const ending=`回到${title}，先选一个你能完成的小动作。做完再复盘，比停留在想法里更有价值。你准备先试哪一步？`;
-    const budget=Math.max(0,target-count(ending));
-    let text=opening+'\n\n'+intro;
+    const ending=target<120 ? '先做一个小动作，做完再复盘。' : `回到${shortTitle}，先选一个你能完成的小动作。做完再复盘，比停留在想法里更有价值。你准备先试哪一步？`;
+    let text=opening;
+    if(count(text+intro+ending)<target*0.8)text+='\n\n'+intro;
     let index=0;
-    while(count(text)<budget && index<60) {
-      const p=subject[index%subject.length];
-      const block=templates[Math.floor(index/subject.length)%templates.length](p);
+    while(count(text+ending)<target*0.9 && index<60) {
+      const block=templates[Math.floor(index/subject.length)%templates.length](subject[index%subject.length]);
       const chunks=block.match(/[^。！？]+[。！？]?/g)||[block];
-      for(const chunk of chunks) { if(count(text)>=budget)break; text+='\n'+chunk; }
+      for(const chunk of chunks) {
+        if(count(text+ending)>=target*0.9)break;
+        if(count(text+chunk+ending)<=target*1.1)text+='\n'+chunk;
+      }
       index++;
     }
-    const all=(text+'\n\n'+ending).match(/[^。！？\n]+[。！？]?/g)||[text];
-    if(count(text+ending)>target*1.2) {
-      let out='';
-      for(const chunk of all) { if(count(out+chunk)>target*1.15 && out) break;out+=(out?'\n':'')+chunk; }
-      return {text:out,target,brief};
+    for(const extra of ['先把目标写清楚。','别急着做大，先验证一小步。','观察反馈，再做调整。']){
+      if(count(text+ending)>=target*0.9)break;
+      if(count(text+extra+ending)<=target*1.1)text+='\n'+extra;
     }
     return {text:text+'\n\n'+ending,target,brief};
   }

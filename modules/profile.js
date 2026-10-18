@@ -30,7 +30,10 @@ window.WorkspaceModules.profile = (()=>{
       }else for(const [name,value] of Object.entries(result[key])){
         if(name==='result' && key==='analysis'){report(value);continue;}
         if(key==='topics' && name==='autoGenerate'){if(typeof value!=='boolean')fail('选题草稿无效');continue;}
-        if(typeof value!=='string' && typeof value!=='number')fail('草稿字段格式无效');
+        if(typeof value==='number'){
+          const numeric=(key==='metrics' && ['plays','likes','comments','shares','leads'].includes(name)) || (key==='scripts' && name==='target');
+          if(!numeric)fail('草稿字段类型无效');integer(value);
+        } else if(typeof value!=='string')fail('草稿字段格式无效');
       }
     }
     return result;
@@ -79,12 +82,13 @@ window.WorkspaceModules.profile = (()=>{
     const a=document.createElement('a');a.href=url;a.download=name;document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);c.notify('备份文件已生成，请保管好下载的 JSON');
   }
   return {
+    validate,
     render(c){return `<div class="module-layout"><section class="panel"><h2>创作者档案</h2><p class="subtext">输入自动保存，生成时参考定位与表达风格。</p><form id="profile-form">${c.field('name','IP 名称',c.state.profile.name,{maxlength:60})}${c.field('niche','内容领域 / 目标人群',c.state.profile.niche,{maxlength:200})}${c.area('style','表达风格',c.state.profile.style)}<button class="primary">保存档案</button></form></section><div class="module-stack"><section class="panel"><h2>工作台外观</h2><p class="subtext">当前：${c.state.theme==='dark'?'深色':'浅色'}主题</p><button class="secondary" id="profile-theme">切换深色 / 浅色</button></section><section class="panel"><h2>数据备份与恢复</h2><p class="subtext">包含所有报告、灵感、选题、文案版本、直播、数据、设置及未完成草稿。数据只存于此浏览器，请定期备份。</p><button class="primary" id="export-data">${c.readError ? '导出原始存储（用于排查）' : '导出全部数据 JSON'}</button><form id="import-form"><div class="field"><label for="backup-file">选择备份文件（最大 20 MB）</label><input class="file-input" type="file" id="backup-file" accept=".json,application/json" required></div><p class="rule-note">恢复会覆盖当前全部数据。请先导出当前备份；导入前会校验格式，取消或校验失败不会修改数据。</p><button class="secondary" type="submit">校验并恢复备份</button></form></section></div></div>`;},
     mount(c){
       const form=document.getElementById('profile-form');
       form.addEventListener('input',()=>c.persist(s=>{s.profile=c.values(form);},'',false));
       form.addEventListener('submit',e=>{e.preventDefault();c.persist(s=>{s.profile=c.values(form);},'档案已保存',false);});
-      document.getElementById('profile-theme').addEventListener('click',()=>{document.getElementById('theme-toggle').click();c.render();});
+      document.getElementById('profile-theme').addEventListener('click',()=>{document.getElementById('theme-toggle').click();});
       document.getElementById('export-data').addEventListener('click',()=>{
         if(c.readError){try{download(localStorage.getItem(c.storageKey) || '',`gongzuo-raw-${c.today()}.json`,c);}catch{c.notify('无法读取本地存储，请检查浏览器权限');}return;}
         download(JSON.stringify({app:'Gongzuo',version:1,exportedAt:new Date().toISOString(),data:c.state},null,2),`gongzuo-backup-${c.today()}.json`,c);

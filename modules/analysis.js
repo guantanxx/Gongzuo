@@ -35,6 +35,9 @@ window.WorkspaceModules.analysis = (() => {
     },
     mount(c) {
       const form = document.getElementById('analysis-form'); c.bindDraft(form,'analysis');
+      form.addEventListener('input',()=>{
+        if(c.draft('analysis').result && c.persist(s=>{delete s.drafts.analysis.result;},'',false)) document.getElementById('analysis-result').innerHTML=c.empty('文案或链接已修改，请重新生成报告。');
+      });
       form.addEventListener('submit', e=>{
         e.preventDefault(); const v=c.values(form); const text=v.text.trim();
         if (!text) return c.notify('请粘贴有效文案');
@@ -43,6 +46,7 @@ window.WorkspaceModules.analysis = (() => {
       });
       document.getElementById('save-report')?.addEventListener('click',()=>{
         const d=c.draft('analysis');
+        if(!d.result)return c.notify('请先重新生成报告');
         if(c.state.reports.some(r=>r.text===d.text && r.url===d.url)) return c.notify('相同报告已在库中');
         c.persist(s=>{s.reports.unshift({id:c.uid(),url:d.url || '',text:d.text,report:d.result,createdAt:new Date().toISOString()});},'报告已保存');
       });
