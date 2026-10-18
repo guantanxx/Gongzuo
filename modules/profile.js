@@ -31,7 +31,7 @@ window.WorkspaceModules.profile = (()=>{
         if(name==='result' && key==='analysis'){report(value);continue;}
         if(key==='topics' && name==='autoGenerate'){if(typeof value!=='boolean')fail('选题草稿无效');continue;}
         if(typeof value==='number'){
-          const numeric=(key==='metrics' && ['plays','likes','comments','shares','leads'].includes(name)) || (key==='scripts' && name==='target');
+          const numeric=(key==='metrics' && ['plays','likes','comments','shares','leads','messages','contacts'].includes(name)) || (key==='scripts' && name==='target');
           if(!numeric)fail('草稿字段类型无效');integer(value);
         } else if(typeof value!=='string')fail('草稿字段格式无效');
       }
@@ -71,7 +71,7 @@ window.WorkspaceModules.profile = (()=>{
             if(row.review!==null){const r=row.review;if(!obj(r))fail('复盘格式无效');review={viewers:integer(r.viewers),peak:integer(r.peak),leads:integer(r.leads),wins:text(r.wins),problems:text(r.problems),next:text(r.next),updatedAt:timestamp(r.updatedAt)};if(review.peak>review.viewers)fail('直播数据无效');}
             return {...base,title:text(row.title,160),kind:text(row.kind ?? '探厂',20),date:day(row.date),duration:integer(row.duration,10,240),goal:text(row.goal),material:text(row.material),script:text(row.script),todos,review,createdAt:timestamp(row.createdAt)};
           }
-          case 'metrics': return {...base,topicId:text(row.topicId,200),title:text(row.title,200),date:day(row.date),notes:text(row.notes),updatedAt:timestamp(row.updatedAt),...Object.fromEntries(['plays','likes','comments','shares','leads'].map(k=>[k,integer(row[k])]))};
+          case 'metrics': return {...base,topicId:text(row.topicId,200),title:text(row.title,200),date:day(row.date),notes:text(row.notes),updatedAt:timestamp(row.updatedAt),...Object.fromEntries(['plays','likes','comments','shares','leads','messages','contacts'].map(k=>[k,integer(row[k] ?? (['messages','contacts'].includes(k)?0:undefined))]))};
         }
       });
     }

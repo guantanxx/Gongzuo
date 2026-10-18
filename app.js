@@ -69,8 +69,8 @@
   }
   function overview() {
     const leads = state.metrics.reduce((sum, row) => sum + row.leads, 0) + state.lives.reduce((sum,row)=>sum+(row.review?.leads || 0),0);
-    const publishedIds = new Set(state.metrics.map(row=>row.topicId).filter(Boolean));
-    const published = state.topics.filter(t=>t.status==='已发布').length + state.metrics.filter(row=>!publishedIds.has(row.topicId)).length;
+    const publishedIds = new Set(state.topics.filter(t=>t.status==='已发布').map(t=>t.id));
+    const published = publishedIds.size + state.metrics.filter(row=>!row.topicId || !publishedIds.has(row.topicId)).length;
     const pending = state.tasks.filter(t=>!t.done).sort((a,b)=>(a.due || '9999').localeCompare(b.due || '9999'));
     return heading('让专业，被光看见。', '商业照明 · 工程亮化 · 面向项目决策者的内容工作台') +
       `<section class="hero"><div class="hero-copy"><span class="eyebrow">A QUIETER WAY TO CREATE</span><h2>从一束光，<br>到一个真实的项目。</h2><p>以现场为素材，以专业为表达。连接总包、装修公司、经销商与甲方，让每一次创作都有清晰的去向。</p><a class="primary" href="#ideas">记录新的灵感 <span aria-hidden="true">↗</span></a></div><div class="light-study" aria-hidden="true"><div class="light-source"></div><div class="light-beam"></div><div class="light-pool"></div><span>STUDY OF LIGHT / 01</span></div></section>
