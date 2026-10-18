@@ -38,7 +38,7 @@ window.WorkspaceModules.profile = (()=>{
     }
     return result;
   }
-  function report(r){if(!obj(r))fail('分析报告格式无效');return Object.fromEntries(['hook','audience','structure','conflict','highlights','advice'].map(k=>[k,text(r[k],500000)]));}
+  function report(r){if(!obj(r))fail('分析报告格式无效');return {...Object.fromEntries(['hook','audience','structure','conflict','highlights','advice'].map(k=>[k,text(r[k],500000)])),pain:text(r.pain ?? '早期报告未包含客户痛点，可重新分析。',500000),conversion:text(r.conversion ?? '早期报告未包含转化话术，可重新分析。',500000)};}
   function validate(payload,c){
     if(!obj(payload))fail('请选择有效的 JSON 备份');
     if(payload.app!==undefined && payload.app!=='Gongzuo')fail('这不是创作舱备份');
