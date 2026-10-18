@@ -69,7 +69,7 @@ window.WorkspaceModules.profile = (()=>{
             const todos=unique(list(row.todos)).map(t=>{if(typeof t.done!=='boolean')fail('待办状态无效');return {id:id(t.id),text:text(t.text,200),done:t.done};});
             let review=null;
             if(row.review!==null){const r=row.review;if(!obj(r))fail('复盘格式无效');review={viewers:integer(r.viewers),peak:integer(r.peak),leads:integer(r.leads),wins:text(r.wins),problems:text(r.problems),next:text(r.next),updatedAt:timestamp(r.updatedAt)};if(review.peak>review.viewers)fail('直播数据无效');}
-            return {...base,title:text(row.title,160),date:day(row.date),duration:integer(row.duration,10,240),goal:text(row.goal),material:text(row.material),script:text(row.script),todos,review,createdAt:timestamp(row.createdAt)};
+            return {...base,title:text(row.title,160),kind:text(row.kind ?? '探厂',20),date:day(row.date),duration:integer(row.duration,10,240),goal:text(row.goal),material:text(row.material),script:text(row.script),todos,review,createdAt:timestamp(row.createdAt)};
           }
           case 'metrics': return {...base,topicId:text(row.topicId,200),title:text(row.title,200),date:day(row.date),notes:text(row.notes),updatedAt:timestamp(row.updatedAt),...Object.fromEntries(['plays','likes','comments','shares','leads'].map(k=>[k,integer(row[k])]))};
         }
