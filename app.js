@@ -81,12 +81,14 @@
   function profile() {
     return heading('个人中心', '定义创作者档案，管理你的本地工作空间。') + `<section class="panel"><h2>创作者档案</h2><p class="subtext">输入自动保存，供本地生成规则参考。</p><form id="profile-form">${field('name', 'IP 名称', state.profile.name, {maxlength:60})}${field('niche', '内容领域 / 目标人群', state.profile.niche, {maxlength:200})}${area('style','表达风格',state.profile.style)}<button class="primary">保存档案</button></form></section>`;
   }
-  const ctx = { get state() { return state; }, persist, esc, uid, date, today, field, area, select, empty, values, draft, bindDraft, notify, go, render, heading, get readError() { return readError; }, storageKey: STORAGE_KEY, initial, replaceState(next) {
+  let renderController = new AbortController();
+  const ctx = { get signal() { return renderController.signal; }, get state() { return state; }, persist, esc, uid, date, today, field, area, select, empty, values, draft, bindDraft, notify, go, render, heading, get readError() { return readError; }, storageKey: STORAGE_KEY, initial, replaceState(next) {
     try { localStorage.setItem(STORAGE_KEY, JSON.stringify(next)); }
     catch { notify('恢复失败：本地存储不可用或空间不足，原数据未变。'); return false; }
     state = next; readError = false; applyTheme(); render(); notify('备份恢复成功'); return true;
   }};
   function render() {
+    renderController.abort(); renderController = new AbortController();
     const section = sections.find(s => s.id === location.hash.slice(1)) || sections[0];
     document.getElementById('breadcrumb').textContent = section.name;
     document.title = `${section.name} · 创作舱`;
