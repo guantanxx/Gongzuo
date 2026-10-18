@@ -60,6 +60,7 @@ python3 -m http.server 8000
 
 ```text
 index.html             静态入口及导航
+favicon.svg            本地站点图标
 styles.css             响应式布局、主题、表单与图表样式
 app.js                 共享状态、持久化、导航和概览
 modules/analysis.js    文案拆解与报告库
@@ -80,3 +81,7 @@ modules/profile.js     设置、备份与数据验证
 5. 等部署成功后，访问 Pages 面板提供的网址，通常是 `https://guantanxx.github.io/Gongzuo/`。
 
 全部资源使用相对路径，适配仓库子路径。无需构建步骤或环境变量；后续推送到 `main` 会由 GitHub Pages 更新部署（启用上述设置后）。
+
+## 验证记录
+
+已使用 Chromium 在本地 HTTP 服务下验证完整创作链路、刷新持久化、版本切换、备份恢复、异常存储与响应式布局。复测步骤与边界见 [TESTING.md](TESTING.md)。网页运行不需要测试工具或第三方依赖。
